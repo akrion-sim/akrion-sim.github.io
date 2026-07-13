@@ -18,6 +18,33 @@ const reward = [
   { k: 'tactical shaping', d: 'width · line depth · cohesion · team shape' },
   { k: 'pitch value (gated)', d: 'pitch-control × expected-threat (xT) delta' },
 ];
+
+const concepts = [
+  {
+    c: 'g', tag: 'test setup', t: 'Hermetic',
+    lead: 'Sealed shut.',
+    body: 'A hermetic run shares no code with the production engine — its own PRNG, its own neural net and backprop, its own PPO, zero external crates. Nothing from the full system can leak in.',
+    why: 'It is a positive control: if a from-scratch policy learns to play inside a sealed 5-a-side sandbox, learning genuinely works — the result can’t be an artifact of the production engine’s database, cluster, or plumbing.',
+  },
+  {
+    c: 'b', tag: 'exact', t: 'Tabular',
+    lead: 'A lookup table.',
+    body: 'Tabular methods store one value for every discrete state — perfect recall, but zero generalization. They know nothing about a position never visited, and a continuous pitch has infinitely many.',
+    why: 'That is exactly why a neural net is needed: it approximates the table with a smooth function that generalizes to unseen states. The dynamic-programming optimum is (near-)tabular; the network is what chases it at scale.',
+  },
+  {
+    c: 'b', tag: 'baseline', t: 'The analytic engine',
+    lead: 'A hand-written, closed-form controller.',
+    body: 'It decides by geometry and rules — who is open, the angle to goal, the expected value of a pass — computed directly, with no learning at all.',
+    why: 'It is a strong, sensible opponent and the sparring partner the learner is scored against. “Beat analytic” is the bar the whole climb is measured by.',
+  },
+  {
+    c: 'r', tag: 'the trap', t: 'The analytic ceiling',
+    lead: 'The parity plateau.',
+    body: 'It is the ceiling a learner hits when its architecture can only imitate or re-rank the analytic engine — it picks among analytic’s own options and its value head regresses onto analytic’s table, so its best possible outcome is a tie. The ceiling is built into the design, not a score being lost.',
+    why: 'Breaking through needs the learner to actually play analytic, judge positions by real outcomes, and take actions analytic never offered. Strip those crutches away — pure net, no tabular-Q blend, no analytic shield — and a hermetic 5-a-side climbed past analytic: +6.24 goal difference, ~99% win rate.',
+  },
+];
 ---
 <Base title="Learning & AI/ML — Akrion Soccer Engine" description="The reinforcement-learning system behind Akrion: self-play, PPO actor-critic, curriculum learning, evolutionary search, and continual adaptation to unseen opponents.">
   <section class="section head">
@@ -142,6 +169,38 @@ const reward = [
 
   <hr class="hr" />
 
+  <!-- VOCABULARY / CONCEPTS -->
+  <section class="section" id="concepts">
+    <div class="wrap">
+      <div class="reveal" style="max-width:760px; margin-bottom:44px;">
+        <p class="eyebrow">Vocabulary</p>
+        <h2>Four words the climb hangs on</h2>
+        <p class="lede">
+          To read the research, four terms matter: what a test rig <em>is</em>
+          (<strong>hermetic</strong>), the two ways a value can be represented
+          (<strong>tabular</strong> vs. learned), the baseline the engine is measured
+          against (<strong>the analytic engine</strong>), and the plateau that baseline
+          quietly imposes (<strong>the analytic ceiling</strong>).
+        </p>
+      </div>
+      <div class="grid grid-2 concepts">
+        {concepts.map((x) => (
+          <article class={`card accent-${x.c} reveal`}>
+            <span class="topbar"></span>
+            <div class="chead">
+              <h3>{x.t}</h3>
+              <span class="ctag">{x.tag}</span>
+            </div>
+            <p class="clead"><strong>{x.lead}</strong> {x.body}</p>
+            <p class="cwhy"><span class="why-k">Why it matters</span> {x.why}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr" />
+
   <!-- OPTIMAL + ADAPT -->
   <section class="section">
     <div class="wrap">
@@ -210,6 +269,15 @@ const reward = [
   .cstage:first-child { border-color: color-mix(in srgb, var(--blue) 45%, var(--line)); }
   .cstage:last-child { border-color: color-mix(in srgb, var(--green) 50%, var(--line)); color: var(--green-bright); }
   .csep { color: var(--ink-dim); }
+
+  .concepts .card { padding: 26px 28px; }
+  .chead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .chead h3 { margin: 0; }
+  .ctag { font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ab); border: 1px solid color-mix(in srgb, var(--a) 40%, var(--line)); background: color-mix(in srgb, var(--a) 10%, transparent); padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+  .clead { color: var(--ink-soft); font-size: 0.96rem; }
+  .clead strong { color: var(--ink); }
+  .cwhy { color: var(--ink-soft); font-size: 0.92rem; margin: 0; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+  .why-k { display: inline-block; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ab); margin-right: 8px; }
 
   .two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 48px; }
   @media (max-width: 780px) { .two-up { grid-template-columns: 1fr; } }
