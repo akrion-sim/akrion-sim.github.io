@@ -220,6 +220,33 @@ const stack = [
     </div>
   </section>
 
+  <hr class="hr" />
+
+  <!-- EXPLAINERS -->
+  <section class="section" id="explainers">
+    <div class="wrap">
+      <div class="reveal" style="max-width:720px; margin-bottom:40px;">
+        <p class="eyebrow">Explainers</p>
+        <h2>Deep dives into how it works</h2>
+        <p class="lede">
+          Standalone, self-contained pages that unpack one idea at a time — the maths, the
+          code, and interactive demos you can watch learn in real time.
+        </p>
+      </div>
+      <div class="grid grid-3">
+        {explainers.map((x) => (
+          <a class={`card accent-${x.accent} reveal explainer-card`} href={x.href}>
+            <span class="topbar"></span>
+            <p class="mono-note" style="margin-bottom:8px; text-transform:uppercase; letter-spacing:0.14em; font-size:0.7rem;">{x.tag}</p>
+            <h3>{x.title}</h3>
+            <p>{x.body}</p>
+            <span class="explainer-go mono">Open explainer →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <!-- CLOSING CTA -->
   <section class="section closing">
     <div class="wrap">
