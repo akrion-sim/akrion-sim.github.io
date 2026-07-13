@@ -3,6 +3,17 @@ import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 const base = import.meta.env.BASE_URL;
 
+// Standalone deep-dive explainers (self-contained pages under public/explainers/).
+const explainers = [
+  {
+    accent: 'g',
+    tag: 'reinforcement learning',
+    title: 'How the soccer AI actually learns',
+    body: 'The real PPO machinery — advantage, GAE, the clipped objective, and how a single weight moves. With a live policy-update demo. Policy gradients, not tree search.',
+    href: `${base}explainers/how-akrion-learns`,
+  },
+];
+
 const pillars = [
   {
     accent: 'b',
@@ -209,6 +220,33 @@ const stack = [
     </div>
   </section>
 
+  <hr class="hr" />
+
+  <!-- EXPLAINERS -->
+  <section class="section" id="explainers">
+    <div class="wrap">
+      <div class="reveal" style="max-width:720px; margin-bottom:40px;">
+        <p class="eyebrow">Explainers</p>
+        <h2>Deep dives into how it works</h2>
+        <p class="lede">
+          Standalone, self-contained pages that unpack one idea at a time — the maths, the
+          code, and interactive demos you can watch learn in real time.
+        </p>
+      </div>
+      <div class="grid grid-3">
+        {explainers.map((x) => (
+          <a class={`card accent-${x.accent} reveal explainer-card`} href={x.href}>
+            <span class="topbar"></span>
+            <p class="mono-note" style="margin-bottom:8px; text-transform:uppercase; letter-spacing:0.14em; font-size:0.7rem;">{x.tag}</p>
+            <h3>{x.title}</h3>
+            <p>{x.body}</p>
+            <span class="explainer-go mono">Open explainer →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <!-- CLOSING CTA -->
   <section class="section closing">
     <div class="wrap">
@@ -270,6 +308,11 @@ const stack = [
   .flowline.hot { border-color: color-mix(in srgb, var(--green) 45%, var(--line)); background: color-mix(in srgb, var(--green) 8%, var(--bg-2)); color: var(--ink); }
   .flowline.hot .k { color: var(--green-bright); }
   .arrow { text-align: center; color: var(--ink-dim); }
+
+  .explainer-card { display: flex; flex-direction: column; text-decoration: none !important; color: inherit; }
+  .explainer-card h3 { transition: color .2s; }
+  .explainer-card:hover h3 { color: var(--green-bright); }
+  .explainer-go { margin-top: auto; padding-top: 16px; color: var(--green-bright); font-size: 0.82rem; opacity: 0.85; }
 
   .closing { padding-top: 40px; }
   .cta-panel {

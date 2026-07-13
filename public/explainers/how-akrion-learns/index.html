@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How Akrion Learns</title>
+<style>
+  :root{
+    /* light theme (default) — clean technical paper with a pitch-signal accent */
+    --bg:#eef2ee; --panel:#ffffff; --panel-2:#f6f9f6;
+    --ink:#131d18; --muted:#586a60; --faint:#84968b; --hair:rgba(10,30,20,.12);
+    --signal:#12905a;   /* grass / learning-signal green */
+    --adv:#b06a06;      /* advantage (amber) */
+    --val:#0a6ea0;      /* value / critic (cyan) */
+    --neg:#c0392b;      /* negative advantage */
+    --code-bg:#f1f5f1;
+    --shadow:0 1px 2px rgba(10,30,20,.06),0 8px 30px rgba(10,30,20,.06);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#08110d; --panel:#0e1a15; --panel-2:#0b1712;
+      --ink:#d7e6dd; --muted:#829589; --faint:#5c6f65; --hair:rgba(255,255,255,.09);
+      --signal:#3ad684; --adv:#f6ad3c; --val:#41c1f2; --neg:#ff6b5e;
+      --code-bg:#0a1510;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 40px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#08110d; --panel:#0e1a15; --panel-2:#0b1712;
+    --ink:#d7e6dd; --muted:#829589; --faint:#5c6f65; --hair:rgba(255,255,255,.09);
+    --signal:#3ad684; --adv:#f6ad3c; --val:#41c1f2; --neg:#ff6b5e;
+    --code-bg:#0a1510; --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 40px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef2ee; --panel:#ffffff; --panel-2:#f6f9f6;
+    --ink:#131d18; --muted:#586a60; --faint:#84968b; --hair:rgba(10,30,20,.12);
+    --signal:#12905a; --adv:#b06a06; --val:#0a6ea0; --neg:#c0392b;
+    --code-bg:#f1f5f1; --shadow:0 1px 2px rgba(10,30,20,.06),0 8px 30px rgba(10,30,20,.06);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.62; margin:0;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,"Cascadia Code",monospace}
+  .wrap{max-width:820px; margin:0 auto; padding:0 22px}
+
+  /* ---- hero ---- */
+  header.hero{padding:76px 22px 30px; border-bottom:1px solid var(--hair)}
+  .hero-inner{max-width:820px;margin:0 auto}
+  .kicker{font-family:ui-monospace,Menlo,monospace; font-size:12px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--signal); margin:0 0 18px}
+  h1{font-size:clamp(34px,6vw,58px); line-height:1.02; letter-spacing:-.02em; font-weight:780;
+    margin:0 0 20px; text-wrap:balance}
+  .lede{font-size:clamp(17px,2.4vw,21px); color:var(--muted); max-width:60ch; margin:0}
+  .lede b{color:var(--ink); font-weight:650}
+
+  /* ---- sections ---- */
+  section{padding:46px 0}
+  section + section{border-top:1px solid var(--hair)}
+  h2{font-size:clamp(23px,3.4vw,30px); letter-spacing:-.015em; margin:0 0 6px; font-weight:720}
+  h2 .num{font-family:ui-monospace,Menlo,monospace; color:var(--signal); font-size:.62em; font-weight:600; margin-right:.7em; vertical-align:.12em}
+  .sub{color:var(--muted); margin:0 0 26px; max-width:62ch}
+  p{max-width:66ch}
+  p .val{color:var(--val); font-weight:600}
+  p .adv{color:var(--adv); font-weight:600}
+  p .sig{color:var(--signal); font-weight:600}
+
+  /* ---- net cards ---- */
+  .cards{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:8px 0 4px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--panel); border:1px solid var(--hair); border-radius:14px; padding:20px 20px 18px; box-shadow:var(--shadow)}
+  .card h3{margin:0 0 4px; font-size:17px}
+  .card .tag{font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--muted)}
+  .card.actor h3{color:var(--signal)} .card.critic h3{color:var(--val)}
+  .card p{font-size:14.5px; color:var(--muted); margin:12px 0 0}
+
+  /* ---- equation block ---- */
+  .eq{background:var(--panel); border:1px solid var(--hair); border-radius:14px; box-shadow:var(--shadow);
+    margin:20px 0; overflow:hidden}
+  .eq .line{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:clamp(15px,2.5vw,19px);
+    padding:20px 22px 6px; overflow-x:auto; white-space:nowrap}
+  .eq .gloss{padding:2px 22px 18px; color:var(--muted); font-size:14.5px; max-width:none}
+  .eq .gloss b{color:var(--ink);font-weight:600}
+  var{font-style:italic; font-family:ui-serif,Georgia,"Times New Roman",serif}
+  .t-adv{color:var(--adv)} .t-val{color:var(--val)} .t-sig{color:var(--signal)} .t-neg{color:var(--neg)}
+  sub,sup{font-size:.72em}
+
+  /* ---- live PPO demo ---- */
+  .demo{background:var(--panel); border:1px solid var(--hair); border-radius:16px; box-shadow:var(--shadow);
+    padding:22px; margin:26px 0 8px}
+  .demo-top{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:16px}
+  .phase{font-family:ui-monospace,Menlo,monospace; font-size:13px; letter-spacing:.04em}
+  .phase .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--signal);margin-right:8px;vertical-align:1px}
+  .adv-read{font-family:ui-monospace,Menlo,monospace; font-size:14px; color:var(--muted)}
+  .adv-read b{font-size:19px}
+  .bars{display:flex; flex-direction:column; gap:9px}
+  .bar-row{display:grid; grid-template-columns:82px 1fr 46px; align-items:center; gap:12px}
+  .bar-row .lbl{font-size:13.5px; color:var(--muted); text-align:right; font-family:ui-monospace,Menlo,monospace}
+  .track{position:relative; height:22px; background:var(--panel-2); border:1px solid var(--hair); border-radius:7px; overflow:hidden}
+  .fill{position:absolute; inset:0 auto 0 0; width:20%; background:var(--signal); opacity:.85;
+    border-radius:6px; transition:width .5s cubic-bezier(.4,0,.2,1), background .3s}
+  .bar-row.picked .track{outline:2px solid var(--adv); outline-offset:1px}
+  .bar-row .pct{font-size:12.5px; color:var(--faint); font-family:ui-monospace,Menlo,monospace; text-align:right}
+  .demo-note{margin:15px 0 0; font-size:13px; color:var(--faint); max-width:none}
+
+  /* ---- comparison table ---- */
+  .tbl-scroll{overflow-x:auto; margin:16px 0 4px; border:1px solid var(--hair); border-radius:14px; box-shadow:var(--shadow)}
+  table{border-collapse:collapse; width:100%; min-width:520px; background:var(--panel)}
+  th,td{text-align:left; padding:14px 18px; border-bottom:1px solid var(--hair); vertical-align:top; font-size:14.5px}
+  thead th{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600}
+  thead th.rollout{color:var(--signal)} thead th.mcts{color:var(--adv)}
+  tbody tr:last-child td{border-bottom:none}
+  td.k{color:var(--muted); font-weight:500; width:26%}
+
+  /* ---- constants strip ---- */
+  .consts{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin:20px 0 6px}
+  .const{background:var(--panel-2); border:1px solid var(--hair); border-radius:12px; padding:14px 16px}
+  .const .val-n{font-family:ui-monospace,Menlo,monospace; font-size:19px; font-weight:600; color:var(--ink)}
+  .const .nm{font-size:12px; color:var(--muted); margin-top:3px}
+
+  .callout{background:var(--panel-2); border:1px solid var(--hair); border-left:3px solid var(--signal);
+    border-radius:0 12px 12px 0; padding:16px 20px; margin:22px 0; color:var(--ink); font-size:15px}
+  .callout b{color:var(--signal)}
+
+  footer{padding:40px 22px 70px; border-top:1px solid var(--hair); color:var(--faint); font-size:13px; text-align:center}
+  footer .mono{color:var(--muted)}
+  ::selection{background:var(--signal); color:var(--bg)}
+</style>
+</head>
+<body>
+
+<a href="/" class="home-link" aria-label="Back to akrion-sim">← akrion-sim</a>
+<style>
+  .home-link{position:fixed; top:16px; left:16px; z-index:50; font-family:ui-monospace,Menlo,monospace;
+    font-size:12.5px; letter-spacing:.02em; color:var(--muted); text-decoration:none;
+    background:var(--panel); border:1px solid var(--hair); border-radius:999px; padding:7px 13px;
+    box-shadow:var(--shadow); transition:color .2s, border-color .2s}
+  .home-link:hover{color:var(--signal); border-color:var(--signal)}
+</style>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="kicker">Akrion · reinforcement learning</p>
+    <h1>How the soccer AI actually learns</h1>
+    <p class="lede">It plays games against itself, measures whether each decision beat expectations, and nudges its network weights toward the ones that did. <b>That's policy-gradient learning — not tree search.</b> Here's the real machinery: the equations, and how a single weight moves.</p>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span>Two networks make every decision</h2>
+  <p class="sub">Each player reads the <b>field vector</b> <var>s</var> — positions and velocities of all players and the ball — and two neural nets turn it into a move and a judgement.</p>
+  <div class="cards">
+    <div class="card actor">
+      <h3>Actor &nbsp;<span class="mono" style="font-weight:400">π<sub>θ</sub>(a | s)</span></h3>
+      <span class="tag">weights θ · the policy</span>
+      <p>Outputs a probability for every action — pass, shoot, dribble, move, pick a gear. At play time it does one forward pass and samples. This is the thing that gets better.</p>
+    </div>
+    <div class="card critic">
+      <h3>Critic &nbsp;<span class="mono" style="font-weight:400">V<sub>φ</sub>(s)</span></h3>
+      <span class="tag">weights φ · the value estimate</span>
+      <p>Estimates how good a state is — the expected future reward. It's the yardstick the actor is measured against: did an action do better or worse than the critic expected?</p>
+    </div>
+  </div>
+  <p style="margin-top:22px">In the 5-a-side engine this is <b>MAPPO-CTDE</b>: the actor sees one player's <em>local</em> view (decentralised), while the critic sees the <em>global</em> state (centralised) — so its value estimate can account for things a single player can't see.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span>The loop: play → measure → nudge</h2>
+  <p class="sub">No equation is invented per game. The <em>same</em> objective is re-evaluated on each fresh batch of self-played experience, and the weights step a little each time.</p>
+
+  <div class="demo" id="demo" aria-label="Animated policy-update demo">
+    <div class="demo-top">
+      <span class="phase" id="phase"><span class="dot"></span>press play</span>
+      <span class="adv-read">advantage Â = <b id="advval" class="t-adv">·</b></span>
+    </div>
+    <div class="bars" id="bars"></div>
+    <p class="demo-note">A toy policy over five actions. Each cycle it <b>samples</b> one action, <b>measures</b> the advantage (did it beat the critic's baseline?), then <b>nudges</b> that action's probability up or down — <em>clipped</em>, so no single game moves it too far. Watch the genuinely-better actions drift up.</p>
+  </div>
+
+  <p><b>Step 1 — play.</b> Sample actions from <span class="mono">π<sub>θ</sub></span>, step the physics sim, and record <span class="mono">(<var>s</var><sub>t</sub>, <var>a</var><sub>t</sub>, <var>r</var><sub>t</sub>)</span> at every tick. This is just <span class="sig">collecting experience</span> — no lookahead.</p>
+
+  <p><b>Step 2 — measure the advantage.</b> How much better was an action than the critic predicted? First the one-step surprise, then a discounted sum of surprises (GAE):</p>
+
+  <div class="eq">
+    <div class="line">δ<sub>t</sub> = <var>r</var><sub>t</sub> + <span class="t-sig">γ</span>·<span class="t-val">V(<var>s</var><sub>t+1</sub>)</span> − <span class="t-val">V(<var>s</var><sub>t</sub>)</span></div>
+    <div class="gloss"><b>TD error</b> — the reward plus what we now think the next state is worth, minus what we thought this state was worth. Positive = pleasant surprise. <span class="t-sig">γ = 0.995</span> discounts the future one tick at a time.</div>
+  </div>
+  <div class="eq">
+    <div class="line"><span class="t-adv">Â<sub>t</sub></span> = Σ<sub>k</sub> (<span class="t-sig">γ</span>λ)<sup>k</sup> · δ<sub>t+k</sub><span style="color:var(--faint)">&nbsp;&nbsp;&nbsp;λ = 0.95</span></div>
+    <div class="gloss"><b>Advantage (GAE)</b> — smooth the surprises over the rest of the play. <span class="t-adv">Â<sub>t</sub> &gt; 0</span> means "that action did better than expected here," which is exactly the signal we want to reinforce.</div>
+  </div>
+
+  <p><b>Step 3 — nudge the actor</b> with the clipped PPO objective:</p>
+
+  <div class="eq">
+    <div class="line">ρ<sub>t</sub> = π<sub>θ</sub>(<var>a</var><sub>t</sub>|<var>s</var><sub>t</sub>) ⁄ π<sub>θ<span style="font-size:.8em">old</span></sub>(<var>a</var><sub>t</sub>|<var>s</var><sub>t</sub>)</div>
+    <div class="gloss"><b>Probability ratio</b> — how much the update has changed this action's probability from the policy that collected the data.</div>
+  </div>
+  <div class="eq">
+    <div class="line"><var>L</var>(θ) = 𝔼[ min( ρ<sub>t</sub><span class="t-adv">Â<sub>t</sub></span>, clip(ρ<sub>t</sub>, 1−<span class="t-sig">ε</span>, 1+<span class="t-sig">ε</span>)·<span class="t-adv">Â<sub>t</sub></span> ) ]<span style="color:var(--faint)">&nbsp;&nbsp;ε = 0.2</span></div>
+    <div class="gloss"><b>The whole point of PPO.</b> Push up the probability of <span class="t-adv">positive-advantage</span> actions, push down the negative ones — but the <b>clip</b> caps how far one update can move, so a single lucky (or unlucky) game can't wreck the policy. Stable, near-monotone improvement.</div>
+  </div>
+  <div class="eq">
+    <div class="line">θ ← θ + α·∇<sub>θ</sub><var>L</var><span style="color:var(--faint)">&nbsp;&nbsp;&nbsp;α = 3·10<sup>−4</sup></span></div>
+    <div class="gloss">Gradient <b>ascent</b> on that objective — the actual weight update, repeated for 4 epochs over minibatches of 1024 transitions.</div>
+  </div>
+
+  <p><b>The critic</b> is fit by plain regression toward the returns it should have predicted:</p>
+  <div class="eq">
+    <div class="line"><var>L</var><sub>V</sub>(φ) = 𝔼[ (<span class="t-val">V<sub>φ</sub>(<var>s</var><sub>t</sub>)</span> − <var>G</var><sub>t</sub>)² ]&nbsp;&nbsp;&nbsp;φ ← φ − α·∇<sub>φ</sub><var>L</var><sub>V</sub></div>
+    <div class="gloss">Squared error between the critic's guess and the observed return <span class="mono"><var>G</var><sub>t</sub> = Σ γ<sup>k</sup><var>r</var><sub>t+k</sub></span>. A better yardstick → cleaner advantages → a better actor.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>How one weight actually moves</h2>
+  <p class="sub">The net is just matrix multiplies and nonlinearities. Backpropagation applies the chain rule to get <span class="mono">∂<var>L</var>/∂w</span> for every weight; each steps by <span class="mono">−α·∂<var>L</var>/∂w</span>.</p>
+  <p>Intuitively, each weight moves in proportion to <b>(the advantage)</b> × <b>(how much that weight raised the log-probability of the action we took)</b>. A weight that made a <span class="adv">good</span> action more likely gets reinforced; one that pushed a <span style="color:var(--neg);font-weight:600">bad</span> action gets turned down. Millions of these tiny, advantage-weighted nudges — over thousands of self-played games — are the entire learning process.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span>Two things our system adds</h2>
+  <p class="sub">Same weight-update math above; these only change the <em>reward</em> and the <em>opponent</em>.</p>
+  <div class="eq">
+    <div class="line"><var>r</var>′<sub>t</sub> = <var>r</var><sub>t</sub> + <span class="t-sig">γ</span>·Φ(<var>s</var><sub>t+1</sub>) − Φ(<var>s</var><sub>t</sub>)</div>
+    <div class="gloss"><b>Potential-based reward shaping.</b> Φ is a hint (e.g. "closer to a good shooting spot"). Because it's a difference of a potential, it <b>telescopes to zero over any loop</b> — it can't be farmed and doesn't change the optimal policy, it just makes the gradient signal denser so learning is faster.</div>
+  </div>
+  <p><b>Self-play.</b> The opponent <em>is</em> a frozen past champion. Playing it generates the trajectories; a challenger is promoted only when it beats the champion <span class="sig">head-to-head on goals</span>. The weights still change by the exact PPO math above — self-play only changes <em>who you play</em>, and guarantees the frontier only ever ratchets on genuine, unfakeable improvement.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span>"Isn't it MCTS, since we simulate?"</h2>
+  <p class="sub">No — and it's the same word for two different things. Simulating games is how we <em>gather data</em>; it is not how we <em>pick moves</em>.</p>
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>&nbsp;</th><th class="rollout">Rollouts &nbsp;(what our learning uses)</th><th class="mcts">MCTS &nbsp;(tree search)</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Purpose</td><td>Collect experience to compute gradients</td><td>Search hypothetical futures to choose an action <em>now</em></td></tr>
+        <tr><td class="k">When</td><td>During training, offline</td><td>At decision time, per move</td></tr>
+        <tr><td class="k">Output</td><td>A batch of (s, a, r) for the PPO update</td><td>One chosen action, from a search tree</td></tr>
+        <tr><td class="k">At play time</td><td>One forward pass, then sample</td><td>Hundreds of simulated branches</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    The <b>5-a-side is pure model-free PPO</b> — it plays games to gather data, then does gradient steps. It never builds a search tree. The <b>11-a-side is a hybrid</b>: the same actor-critic learning, plus model-based <em>planning</em> that does simulate forward — MPC (optimise a short control horizon) and a DP rollout teacher. Neural MCTS is available but was <b>off</b> in the current run. So even the big engine isn't "essentially MCTS" — it's PPO-style learning with optional planning bolted on.
+  </div>
+  <p style="margin-top:20px"><b>In one line:</b> we learn by <span class="sig">policy gradients on self-played experience</span> — play, measure advantage, nudge weights via clipped PPO. Simulation gathers the data; it doesn't pick the moves.</p>
+</section>
+
+<section>
+  <h2><span class="num">06</span>Grounded in the running system</h2>
+  <p class="sub">The constants above aren't illustrative — they're the ones in the 5-a-side trainer right now.</p>
+  <div class="consts">
+    <div class="const"><div class="val-n t-sig">0.995</div><div class="nm">γ · discount</div></div>
+    <div class="const"><div class="val-n">0.95</div><div class="nm">λ · GAE</div></div>
+    <div class="const"><div class="val-n t-sig">0.2</div><div class="nm">ε · PPO clip</div></div>
+    <div class="const"><div class="val-n">3e-4</div><div class="nm">α · actor LR</div></div>
+    <div class="const"><div class="val-n">1e-3</div><div class="nm">α · critic LR</div></div>
+    <div class="const"><div class="val-n">1024</div><div class="nm">minibatch</div></div>
+  </div>
+  <p style="margin-top:24px">And it works: on the self-play ladder, each generation beats the <em>previous</em> champion head-to-head by a growing margin — <span class="mono">+0.48 → +1.00 → +1.48 → +2.23</span> goal-difference across gens 1–4, winrate climbing to 0.87. The frontier only advances when the new policy genuinely out-scores the old one.</p>
+</section>
+
+</div>
+</main>
+
+<footer>
+  <p class="mono">Akrion soccer engine · hermetic PPO + GAE, MAPPO-CTDE, self-play champion ladder</p>
+  <p>Play → measure advantage → nudge weights. Repeat a few million times.</p>
+</footer>
+
+<script>
+(function(){
+  var ACTIONS = ["Pass","Shoot","Dribble","Move","Hold"];
+  // hidden "true" values — Pass & Shoot are genuinely better here
+  var V = [0.72, 0.55, 0.34, 0.22, 0.05];
+  var probs = [0.2,0.2,0.2,0.2,0.2];
+  var barsEl = document.getElementById('bars');
+  var phaseEl = document.getElementById('phase');
+  var advEl = document.getElementById('advval');
+  var rows = [];
+
+  ACTIONS.forEach(function(name,i){
+    var row = document.createElement('div'); row.className='bar-row'; row.dataset.i=i;
+    var lbl = document.createElement('div'); lbl.className='lbl'; lbl.textContent=name;
+    var track = document.createElement('div'); track.className='track';
+    var fill = document.createElement('div'); fill.className='fill';
+    track.appendChild(fill);
+    var pct = document.createElement('div'); pct.className='pct'; pct.textContent='20%';
+    row.appendChild(lbl); row.appendChild(track); row.appendChild(pct);
+    barsEl.appendChild(row);
+    rows.push({row:row,fill:fill,pct:pct});
+  });
+
+  function render(){
+    for(var i=0;i<probs.length;i++){
+      rows[i].fill.style.width = (probs[i]*100).toFixed(1)+'%';
+      rows[i].pct.textContent = Math.round(probs[i]*100)+'%';
+    }
+  }
+  function setPhase(txt,color){ phaseEl.innerHTML='<span class="dot" style="background:'+(color||'var(--signal)')+'"></span>'+txt; }
+  function clearPick(){ rows.forEach(function(r){r.row.classList.remove('picked');}); }
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  render();
+
+  if(reduce){
+    // static: settle to a learned-ish distribution, no animation loop
+    probs=[0.42,0.29,0.16,0.09,0.04]; render(); setPhase('learned policy (motion reduced)');
+    advEl.textContent='—';
+    return;
+  }
+
+  var picked=-1;
+  function sample(){
+    var r=Math.random(), c=0;
+    for(var i=0;i<probs.length;i++){c+=probs[i]; if(r<=c) return i;}
+    return probs.length-1;
+  }
+  function cyclePlay(){
+    clearPick();
+    picked = sample();
+    rows[picked].row.classList.add('picked');
+    setPhase('① play — sampled <b class="mono">'+ACTIONS[picked]+'</b>','var(--val)');
+    advEl.textContent='·';
+    setTimeout(cycleMeasure, 900);
+  }
+  function cycleMeasure(){
+    var baseline=0; for(var i=0;i<probs.length;i++) baseline+=probs[i]*V[i];
+    var reward = V[picked] + (Math.random()-0.5)*0.28;
+    window._A = reward - baseline;
+    var sgn = window._A>=0?'+':'−';
+    advEl.textContent = sgn+Math.abs(window._A).toFixed(2);
+    advEl.className = window._A>=0 ? 't-adv' : 't-neg';
+    advEl.style.color = window._A>=0 ? 'var(--adv)' : 'var(--neg)';
+    setPhase('② measure — Â = reward − critic baseline','var(--adv)');
+    setTimeout(cycleNudge, 1000);
+  }
+  function cycleNudge(){
+    setPhase('③ nudge — clip the update, renormalise','var(--signal)');
+    var A = window._A;
+    var step = Math.max(-0.6, Math.min(0.6, 0.9*A));      // clipped
+    probs[picked] *= Math.exp(step);
+    var s=0; for(var i=0;i<probs.length;i++) s+=probs[i];  // renormalise
+    for(var j=0;j<probs.length;j++) probs[j]/=s;
+    render();
+    setTimeout(function(){ clearPick(); cyclePlay(); }, 1100);
+  }
+
+  // kick off shortly after load
+  setPhase('warming up…');
+  setTimeout(cyclePlay, 700);
+})();
+</script>
+
+</body>
+</html>
