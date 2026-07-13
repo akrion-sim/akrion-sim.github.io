@@ -3,6 +3,17 @@ import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 const base = import.meta.env.BASE_URL;
 
+// Standalone deep-dive explainers (self-contained pages under public/explainers/).
+const explainers = [
+  {
+    accent: 'g',
+    tag: 'reinforcement learning',
+    title: 'How the soccer AI actually learns',
+    body: 'The real PPO machinery — advantage, GAE, the clipped objective, and how a single weight moves. With a live policy-update demo. Policy gradients, not tree search.',
+    href: `${base}explainers/how-akrion-learns`,
+  },
+];
+
 const pillars = [
   {
     accent: 'b',
