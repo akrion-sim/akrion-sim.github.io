@@ -1,0 +1,56 @@
+---
+const base = import.meta.env.BASE_URL;
+const links = [
+  { href: `${base}#pillars`, label: 'Pillars' },
+  { href: `${base}engine`, label: 'The Engine' },
+  { href: `${base}learning`, label: 'Learning' },
+  { href: `${base}#adapt`, label: 'Adaptation' },
+];
+---
+<header class="nav" data-nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href={base}>
+      <span class="mark" aria-hidden="true">
+        <i class="b"></i><i class="g"></i><i class="r"></i>
+      </span>
+      <span class="brand-text">akrion<span class="sub">·soccer-engine</span></span>
+    </a>
+    <nav class="links" aria-label="Primary">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+    <a class="btn btn-ghost gh" href="https://github.com/akrion-sim" target="_blank" rel="noopener">
+      GitHub ↗
+    </a>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(7, 11, 20, 0.6);
+    border-bottom: 1px solid transparent;
+    transition: border-color .3s, background .3s;
+  }
+  .nav.scrolled {
+    border-bottom-color: var(--line);
+    background: rgba(7, 11, 20, 0.86);
+  }
+  .nav-inner { display: flex; align-items: center; gap: 24px; height: 68px; }
+  .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none !important; font-weight: 700; letter-spacing: -0.02em; }
+  .mark { display: inline-flex; gap: 3px; }
+  .mark i { width: 7px; height: 18px; border-radius: 3px; display: block; }
+  .mark .b { background: var(--blue-bright); box-shadow: 0 0 12px var(--blue-glow); }
+  .mark .g { background: var(--green-bright); box-shadow: 0 0 12px var(--green-glow); }
+  .mark .r { background: var(--red-bright); box-shadow: 0 0 12px var(--red-glow); }
+  .brand-text { font-size: 1.05rem; }
+  .sub { color: var(--ink-dim); font-weight: 500; }
+  .links { display: flex; gap: 26px; margin-left: auto; }
+  .links a { color: var(--ink-soft); font-size: 0.95rem; text-decoration: none; transition: color .2s; }
+  .links a:hover { color: var(--ink); }
+  .gh { padding: 9px 16px; font-size: 0.9rem; }
+  @media (max-width: 820px) {
+    .links { display: none; }
+    .gh { margin-left: auto; }
+  }
+</style>

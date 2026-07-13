@@ -1,0 +1,149 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="pill" style="margin-bottom:22px">
+        <span class="dot g"></span> Rust · reinforcement learning · intelligent control
+      </div>
+      <h1>
+        Twenty-two minds,<br />
+        <span class="grad">one learned system.</span>
+      </h1>
+      <p class="lede">
+        The <strong>Akrion Soccer Engine</strong> simulates full 11-v-11 football and
+        drives every player with <em>intelligent control</em> — belief, planning, and
+        model-predictive execution. Then it <em>never stops learning</em>: self-play,
+        policy-gradient RL, and evolutionary search push it from good tactics toward
+        optimal control, and keep adapting to opponents it has never seen.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href={`${base}learning`}>How it learns →</a>
+        <a class="btn btn-ghost" href={`${base}engine`}>Inside the engine</a>
+      </div>
+      <div class="stat-row">
+        <div><b>22</b><span>autonomous agents / match</span></div>
+        <div><b>POMDP</b><span>belief-space decisions</span></div>
+        <div><b>MPC</b><span>per-player execution</span></div>
+      </div>
+    </div>
+
+    <div class="hero-viz" aria-hidden="true">
+      <div class="viz-frame">
+        <svg viewBox="0 0 420 300" class="pitch" role="img" aria-label="Tactical field with control vectors">
+          <!-- pitch -->
+          <rect x="8" y="8" width="404" height="284" rx="10" class="turf" />
+          <line x1="210" y1="8" x2="210" y2="292" class="chalk" />
+          <circle cx="210" cy="150" r="34" class="chalk" fill="none" />
+          <circle cx="210" cy="150" r="2.5" class="chalk-fill" />
+          <rect x="8" y="92" width="46" height="116" class="chalk" fill="none" />
+          <rect x="366" y="92" width="46" height="116" class="chalk" fill="none" />
+          <rect x="8" y="120" width="20" height="60" class="chalk" fill="none" />
+          <rect x="392" y="120" width="20" height="60" class="chalk" fill="none" />
+
+          <!-- pass / control lanes -->
+          <g class="lanes">
+            <path d="M96 210 Q170 150 250 96" class="lane blue" />
+            <path d="M96 90 Q160 150 250 210" class="lane green" />
+            <path d="M250 96 Q330 130 372 150" class="lane green" />
+            <path d="M300 210 Q250 250 190 240" class="lane red" />
+          </g>
+
+          <!-- home team (blue = control) -->
+          <g class="team home">
+            <circle cx="34" cy="150" r="6" /> <!-- gk -->
+            <circle cx="96" cy="90" r="6" />
+            <circle cx="96" cy="150" r="6" />
+            <circle cx="96" cy="210" r="6" />
+            <circle cx="170" cy="120" r="6" />
+            <circle cx="170" cy="180" r="6" />
+            <circle cx="250" cy="96" r="6" class="carrier" />
+            <circle cx="250" cy="210" r="6" />
+            <circle cx="300" cy="130" r="6" />
+            <circle cx="300" cy="180" r="6" />
+            <circle cx="330" cy="150" r="6" />
+          </g>
+
+          <!-- away team (red = adversary) -->
+          <g class="team away">
+            <circle cx="386" cy="150" r="6" />
+            <circle cx="324" cy="96" r="6" />
+            <circle cx="324" cy="210" r="6" />
+            <circle cx="270" cy="150" r="6" />
+            <circle cx="220" cy="110" r="6" />
+            <circle cx="220" cy="190" r="6" />
+            <circle cx="180" cy="150" r="6" />
+            <circle cx="140" cy="110" r="6" />
+            <circle cx="140" cy="190" r="6" />
+            <circle cx="200" cy="240" r="6" />
+            <circle cx="110" cy="150" r="6" />
+          </g>
+
+          <!-- ball -->
+          <circle cx="250" cy="96" r="3.4" class="ball" />
+        </svg>
+
+        <div class="viz-tags">
+          <span class="tag b"><i></i>control vector</span>
+          <span class="tag g"><i></i>learned pass</span>
+          <span class="tag r"><i></i>press intent</span>
+        </div>
+      </div>
+      <div class="viz-caption mono-note">formation LP → policy head → MPC · resolved every tick</div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero { padding: clamp(48px, 8vw, 92px) 0 clamp(40px, 6vw, 72px); position: relative; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 52px; align-items: center; }
+  .grad {
+    background: linear-gradient(100deg, var(--blue-bright), var(--green-bright) 55%, var(--red-bright));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero-copy .lede { margin-top: 20px; }
+  .cta { display: flex; gap: 14px; margin: 32px 0 34px; flex-wrap: wrap; }
+  .stat-row { display: flex; gap: 30px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 22px; }
+  .stat-row div { display: flex; flex-direction: column; }
+  .stat-row b { font-size: 1.5rem; font-family: var(--font-mono); color: var(--ink); letter-spacing: -0.02em; }
+  .stat-row span { font-size: 0.82rem; color: var(--ink-dim); }
+
+  .viz-frame {
+    background: linear-gradient(180deg, var(--panel), var(--bg-2));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    box-shadow: 0 30px 80px -40px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  .pitch { width: 100%; height: auto; display: block; border-radius: 12px; }
+  .turf { fill: #08110b; stroke: #14351f; stroke-width: 1.5; }
+  .chalk { stroke: rgba(120,160,140,0.35); stroke-width: 1.2; }
+  .chalk-fill { fill: rgba(120,160,140,0.5); }
+
+  .lane { fill: none; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 4 6; opacity: 0.9; }
+  .lane.blue { stroke: var(--blue-bright); animation: dash 2.6s linear infinite; }
+  .lane.green { stroke: var(--green-bright); animation: dash 2.2s linear infinite; }
+  .lane.red { stroke: var(--red-bright); opacity: 0.7; animation: dash 3s linear infinite reverse; }
+  @keyframes dash { to { stroke-dashoffset: -40; } }
+
+  .team.home circle { fill: var(--blue); stroke: var(--blue-bright); stroke-width: 1.2; }
+  .team.away circle { fill: #331016; stroke: var(--red); stroke-width: 1.4; }
+  .carrier { fill: var(--blue-bright) !important; }
+  .carrier, .ball { animation: pulse 2s var(--ease) infinite; }
+  .ball { fill: #fff; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+  .viz-tags { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; padding: 0 4px; }
+  .tag { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
+  .tag i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+  .tag.b i { background: var(--blue-bright); }
+  .tag.g i { background: var(--green-bright); }
+  .tag.r i { background: var(--red-bright); }
+  .viz-caption { text-align: center; margin-top: 14px; }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .hero-viz { order: -1; }
+  }
+</style>

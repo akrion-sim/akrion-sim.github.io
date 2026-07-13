@@ -1,0 +1,63 @@
+---
+const base = import.meta.env.BASE_URL;
+const year = 2026;
+---
+<footer class="ft">
+  <div class="wrap ft-inner">
+    <div class="col brandcol">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"><i class="b"></i><i class="g"></i><i class="r"></i></span>
+        <strong>akrion soccer engine</strong>
+      </div>
+      <p class="mono-note">Agnostic 2D soccer simulation &amp; reinforcement-learning engine, written in Rust. Built on the <code>des_engine</code> discrete-event / optimization core.</p>
+    </div>
+    <div class="col">
+      <h4>Explore</h4>
+      <a href={`${base}engine`}>The Engine</a>
+      <a href={`${base}learning`}>Learning &amp; AI/ML</a>
+      <a href={`${base}#adapt`}>Continual Adaptation</a>
+      <a href={`${base}#pillars`}>Three Pillars</a>
+    </div>
+    <div class="col">
+      <h4>Code</h4>
+      <a href="https://github.com/akrion-sim" target="_blank" rel="noopener">akrion-sim org ↗</a>
+      <a href="https://github.com/akrion-sim" target="_blank" rel="noopener">soccer engine ↗</a>
+      <a href="https://github.com/akrion-sim" target="_blank" rel="noopener">discrete-event-system ↗</a>
+    </div>
+  </div>
+  <div class="wrap ft-base">
+    <span>© {year} akrion-sim</span>
+    <span class="legend">
+      <span><i class="d b"></i> control</span>
+      <span><i class="d g"></i> learning</span>
+      <span><i class="d r"></i> adversary</span>
+    </span>
+  </div>
+</footer>
+
+<style>
+  .ft { border-top: 1px solid var(--line); background: linear-gradient(180deg, transparent, rgba(0,0,0,0.35)); margin-top: 40px; }
+  .ft-inner { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 40px; padding-top: 56px; padding-bottom: 40px; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .mark { display: inline-flex; gap: 3px; }
+  .mark i { width: 6px; height: 16px; border-radius: 3px; display: block; }
+  .mark .b { background: var(--blue-bright); }
+  .mark .g { background: var(--green-bright); }
+  .mark .r { background: var(--red-bright); }
+  .brandcol p { max-width: 42ch; }
+  .col h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-dim); margin-bottom: 14px; }
+  .col a { display: block; color: var(--ink-soft); font-size: 0.95rem; margin-bottom: 9px; text-decoration: none; }
+  .col a:hover { color: var(--ink); }
+  .ft-base { display: flex; justify-content: space-between; align-items: center; padding-top: 22px; padding-bottom: 34px; border-top: 1px solid var(--line-soft); color: var(--ink-dim); font-size: 0.85rem; font-family: var(--font-mono); }
+  .legend { display: flex; gap: 18px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend .d { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .legend .d.b { background: var(--blue-bright); }
+  .legend .d.g { background: var(--green-bright); }
+  .legend .d.r { background: var(--red-bright); }
+  @media (max-width: 720px) {
+    .ft-inner { grid-template-columns: 1fr 1fr; }
+    .brandcol { grid-column: 1 / -1; }
+    .ft-base { flex-direction: column; gap: 14px; }
+  }
+</style>

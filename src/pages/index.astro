@@ -1,0 +1,284 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+const base = import.meta.env.BASE_URL;
+
+const pillars = [
+  {
+    accent: 'b',
+    tag: 'Intelligent control',
+    title: 'Optimal control, not scripted rules',
+    body: 'Every tick, a formation LP/IPM allocates team shape, a policy head chooses each player’s intent, and per-player Model-Predictive Control turns that intent into a feasible trajectory. Control is computed — not hand-authored.',
+    points: ['Formation LP solved by Clarabel / IPM', 'POMDP belief over press & pass intent', 'Per-player MPC with feasibility veto'],
+  },
+  {
+    accent: 'g',
+    tag: 'Learning',
+    title: 'It learns its way to better football',
+    body: 'A self-play loop trains actor-critic policies with PPO and GAE advantages, plus specialist heads for passing, shooting, and line depth. Reward is grounded in real events — goals, completed passes, chains — with careful tactical shaping.',
+    points: ['PPO-clip actor-critic + GAE', 'Curriculum: locomotion → full match', 'Reward from real match events'],
+  },
+  {
+    accent: 'r',
+    tag: 'Adaptation',
+    title: 'Never-before-seen inputs, handled',
+    body: 'New opponent, new style, a state it has never encountered — the engine keeps learning online and uses evolutionary / genetic search to escape local optima that pure gradients get stuck in.',
+    points: ['Adversarial self-play opponents', 'GA: mutate · crossover · elite', 'Config-similarity retrieval (HNSW)'],
+  },
+];
+
+const stack = [
+  { n: '01', c: 'b', t: 'POMDP belief', d: 'Each player maintains belief over hidden state — press intent, anticipated pass trajectories — because no agent sees the whole truth.' },
+  { n: '02', c: 'b', t: 'World model', d: 'A learned forward-dynamics model rolls the match a short horizon ahead, so decisions weigh where the ball and bodies will be, not just where they are.' },
+  { n: '03', c: 'b', t: 'Formation LP / IPM', d: 'A continuous linear program (Clarabel / interior-point) allocates the eleven slots into an optimal team shape for the current phase of play.' },
+  { n: '04', c: 'g', t: 'Policy head (actor)', d: 'A neural SoccerPolicyHead with per-role embeddings — GK, DEF, MID, FWD — scores actions: pass, shoot, dribble, move, tackle.' },
+  { n: '05', c: 'b', t: 'PUCT re-ranker', d: 'An optional bounded lookahead (policy + value + world model) re-ranks the top candidates — shallow search over a learned prior.' },
+  { n: '06', c: 'b', t: 'Per-player MPC', d: 'Model-Predictive Control converts the chosen intent into a physically feasible trajectory and vetoes anything the body cannot actually execute.' },
+];
+---
+<Base>
+  <Hero />
+
+  <!-- RAISON D'ÊTRE -->
+  <section class="section" id="why">
+    <div class="wrap">
+      <div class="why-grid">
+        <div class="reveal">
+          <p class="eyebrow">Raison d'être</p>
+          <h2>Football is the hardest control problem hiding in plain sight.</h2>
+        </div>
+        <div class="reveal">
+          <p class="lede">
+            Twenty-two bodies, one ball, partial information, an adversary, and a
+            continuous state space that never repeats. Hand-written rules fall over the
+            moment reality diverges from the script.
+          </p>
+          <p>
+            Akrion treats a match as what it really is — a <strong>partially-observable,
+            multi-agent optimal-control problem</strong> — and builds a system that
+            <em>reasons</em> and <em>learns</em> instead of following a decision tree. It
+            is a research engine for the general question hiding underneath the sport:
+            how do many agents cooperate and compete toward optimal behaviour under
+            uncertainty, and keep improving when the world changes?
+          </p>
+          <div class="why-tags">
+            <span class="pill"><span class="dot b"></span> partially observable</span>
+            <span class="pill"><span class="dot r"></span> adversarial</span>
+            <span class="pill"><span class="dot g"></span> continuously learning</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr" />
+
+  <!-- THREE PILLARS -->
+  <section class="section" id="pillars">
+    <div class="wrap">
+      <div class="reveal" style="text-align:center; max-width:720px; margin:0 auto 52px;">
+        <p class="eyebrow" style="justify-content:center">Three pillars</p>
+        <h2>Control. Learning. Adaptation.</h2>
+        <p class="lede" style="margin:0 auto;">
+          Three colours, three ideas. The engine is the loop that binds them: control
+          acts, learning improves the acting, adaptation keeps it honest against a world
+          that keeps changing.
+        </p>
+      </div>
+      <div class="grid grid-3">
+        {pillars.map((p) => (
+          <article class={`card accent-${p.accent} reveal`}>
+            <span class="topbar"></span>
+            <div class={`icon tint`}>{p.accent === 'b' ? '⌁' : p.accent === 'g' ? '↗' : '⚡'}</div>
+            <p class="mono-note" style="margin-bottom:8px; text-transform:uppercase; letter-spacing:0.14em; font-size:0.7rem;">{p.tag}</p>
+            <h3>{p.title}</h3>
+            <p>{p.body}</p>
+            <ul class="ticks">
+              {p.points.map((pt) => <li>{pt}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr" />
+
+  <!-- PER-TICK DECISION STACK -->
+  <section class="section" id="stack">
+    <div class="wrap">
+      <div class="reveal" style="max-width:720px; margin-bottom:48px;">
+        <p class="eyebrow">Per-tick decision stack</p>
+        <h2>What happens in a single tick, for every player</h2>
+        <p class="lede">
+          Intelligent control is a pipeline, not a black box. Each player runs the same
+          six stages every tick — belief, prediction, allocation, choice, search, and
+          execution. Learning slots into stage 04; everything around it makes that
+          learning usable on a real pitch.
+        </p>
+      </div>
+      <div class="stack-grid">
+        {stack.map((s) => (
+          <div class={`stack-item accent-${s.c} reveal`}>
+            <span class="num mono">{s.n}</span>
+            <div>
+              <h3>{s.t}</h3>
+              <p>{s.d}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p class="mono-note reveal" style="margin-top:28px; text-align:center;">
+        POMDP belief → world model → formation LP → policy head → PUCT → MPC → action
+      </p>
+    </div>
+  </section>
+
+  <hr class="hr" />
+
+  <!-- ADAPTATION -->
+  <section class="section" id="adapt">
+    <div class="wrap">
+      <div class="adapt-grid">
+        <div class="reveal">
+          <p class="eyebrow">Continual adaptation</p>
+          <h2>The point isn't to be good once. It's to keep getting better.</h2>
+          <p class="lede">
+            A frozen policy is a policy waiting to be figured out. Akrion is designed so
+            that the moment it meets a new team, a new style, or a state it has never
+            seen, it has machinery to respond — not a fallback rule, but a way to
+            <em>learn the answer</em>.
+          </p>
+          <div class="cta" style="margin-top:26px;">
+            <a class="btn btn-primary" href={`${base}learning`}>See the learning system →</a>
+          </div>
+        </div>
+        <div class="adapt-cards">
+          <div class="mini card accent-r reveal">
+            <span class="topbar"></span>
+            <h3><span class="dot r"></span> Unseen opponents</h3>
+            <p>Adversarial self-play trains against a resumed policy with an adversarial embedding — so the champion is always challenged by something that adapts back.</p>
+          </div>
+          <div class="mini card accent-g reveal">
+            <span class="topbar"></span>
+            <h3><span class="dot g"></span> Escaping local optima</h3>
+            <p>Every few games, evolutionary search — mutate, crossover, keep the elite — perturbs the population out of plateaus that pure gradient descent settles into.</p>
+          </div>
+          <div class="mini card accent-b reveal">
+            <span class="topbar"></span>
+            <h3><span class="dot b"></span> Novel states</h3>
+            <p>Config-similarity retrieval (HNSW over a 22-players-plus-ball embedding) recalls the closest situations ever seen, grounding decisions in the nearest known experience.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr" />
+
+  <!-- FOUNDATION -->
+  <section class="section" id="foundation">
+    <div class="wrap">
+      <div class="found reveal">
+        <div class="found-copy">
+          <p class="eyebrow">The foundation</p>
+          <h2>Built on a discrete-event &amp; optimization core</h2>
+          <p>
+            The soccer engine doesn't reinvent the mathematics. It stands on
+            <code>des_engine</code> — a Rust discrete-event-system library that solves
+            MDPs, POMDPs, LPs, MILPs, hybrid block diagrams and time-stepped simulations
+            behind one uniform, JSON-first API. Soccer is one domain built on a general
+            simulation-and-optimization substrate.
+          </p>
+          <div class="found-tags">
+            <span class="pill">MDP / POMDP solvers</span>
+            <span class="pill">LP · MILP · IPM</span>
+            <span class="pill">future-event-list sim</span>
+            <span class="pill">JSON-first SDK</span>
+            <span class="pill">frame streaming</span>
+          </div>
+        </div>
+        <div class="found-flow">
+          <div class="flowline"><span class="k">spec</span> JSON model / command stream</div>
+          <div class="arrow">↓</div>
+          <div class="flowline hot"><span class="k">des_engine</span> runner · solver · learner</div>
+          <div class="arrow">↓</div>
+          <div class="flowline"><span class="k">artifact</span> frames · results · report</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING CTA -->
+  <section class="section closing">
+    <div class="wrap">
+      <div class="cta-panel reveal">
+        <h2>From good football to optimal control — and it keeps climbing.</h2>
+        <p class="lede" style="margin:0 auto 28px;">
+          Explore how the engine is built, and how it learns its way toward mastery.
+        </p>
+        <div class="cta" style="justify-content:center;">
+          <a class="btn btn-primary" href={`${base}learning`}>Learning &amp; AI/ML</a>
+          <a class="btn btn-ghost" href={`${base}engine`}>The Engine</a>
+          <a class="btn btn-ghost" href="https://github.com/akrion-sim" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .why-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 48px; align-items: start; }
+  .why-tags { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+  @media (max-width: 860px) { .why-grid { grid-template-columns: 1fr; gap: 24px; } }
+
+  .ticks { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 9px; }
+  .ticks li { position: relative; padding-left: 22px; color: var(--ink-soft); font-size: 0.92rem; }
+  .ticks li::before { content: ""; position: absolute; left: 0; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--ab); box-shadow: 0 0 10px var(--ag); }
+
+  .stack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 900px) { .stack-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .stack-grid { grid-template-columns: 1fr; } }
+  .stack-item {
+    display: flex; gap: 16px; padding: 22px;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: linear-gradient(180deg, var(--panel), var(--bg-2));
+    border-left: 3px solid var(--a);
+    transition: transform .25s var(--ease), border-color .25s;
+  }
+  .stack-item:hover { transform: translateY(-3px); }
+  .stack-item .num { color: var(--ab); font-size: 0.9rem; font-weight: 700; opacity: 0.9; }
+  .stack-item h3 { font-size: 1.08rem; margin-bottom: 6px; }
+  .stack-item p { color: var(--ink-soft); font-size: 0.92rem; margin: 0; }
+
+  .adapt-grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 48px; align-items: center; }
+  @media (max-width: 900px) { .adapt-grid { grid-template-columns: 1fr; gap: 32px; } }
+  .adapt-cards { display: grid; gap: 16px; }
+  .mini { padding: 22px; }
+  .mini h3 { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; margin-bottom: 8px; }
+  .mini p { margin: 0; }
+
+  .found { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 44px; align-items: center;
+    background: linear-gradient(180deg, var(--panel), var(--bg-2)); border: 1px solid var(--line);
+    border-radius: var(--radius-lg); padding: 40px; }
+  @media (max-width: 900px) { .found { grid-template-columns: 1fr; gap: 30px; } }
+  .found-copy p { color: var(--ink-soft); }
+  .found-tags { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  .found-flow { display: grid; gap: 8px; }
+  .flowline { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--bg-2); font-size: 0.95rem; color: var(--ink-soft); }
+  .flowline .k { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-dim); display: block; margin-bottom: 4px; }
+  .flowline.hot { border-color: color-mix(in srgb, var(--green) 45%, var(--line)); background: color-mix(in srgb, var(--green) 8%, var(--bg-2)); color: var(--ink); }
+  .flowline.hot .k { color: var(--green-bright); }
+  .arrow { text-align: center; color: var(--ink-dim); }
+
+  .closing { padding-top: 40px; }
+  .cta-panel {
+    text-align: center; padding: 56px 32px;
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    background:
+      radial-gradient(600px 300px at 20% 0%, rgba(59,130,246,0.14), transparent 60%),
+      radial-gradient(600px 300px at 80% 100%, rgba(34,197,94,0.12), transparent 60%),
+      linear-gradient(180deg, var(--panel), var(--bg-2));
+  }
+  .cta-panel h2 { max-width: 20ch; margin: 0 auto 14px; }
+</style>

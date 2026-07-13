@@ -1,0 +1,64 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = 'Akrion Soccer Engine — learned intelligent control for 22-player football',
+  description = 'A Rust simulation and reinforcement-learning engine that drives 22 autonomous footballers with intelligent control — POMDP belief, formation LP/IPM, per-player MPC — and never stops learning: self-play, PPO, and evolutionary search that adapt to unseen opponents and styles.',
+} = Astro.props;
+
+const site = Astro.site?.href ?? 'https://akrion-sim.github.io/';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#070b14" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={site} />
+    <meta property="og:image" content={`${site}og.svg`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+  </head>
+  <body>
+    <Nav />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+
+    <script is:inline>
+      // Scroll reveal
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+          }
+        }
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+      const attach = () => document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+      if (document.readyState !== 'loading') attach();
+      else document.addEventListener('DOMContentLoaded', attach);
+
+      // Nav shadow on scroll
+      const nav = document.querySelector('[data-nav]');
+      const onScroll = () => nav && nav.classList.toggle('scrolled', window.scrollY > 12);
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    </script>
+  </body>
+</html>
