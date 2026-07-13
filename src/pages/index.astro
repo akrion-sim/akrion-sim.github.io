@@ -44,7 +44,7 @@ const stack = [
   { n: '03', c: 'b', t: 'Formation LP / IPM', d: 'A continuous linear program (Clarabel / interior-point) allocates the eleven slots into an optimal team shape for the current phase of play.' },
   { n: '04', c: 'g', t: 'Policy head (actor)', d: 'A neural SoccerPolicyHead with per-role embeddings — GK, DEF, MID, FWD — scores actions: pass, shoot, dribble, move, tackle.' },
   { n: '05', c: 'b', t: 'PUCT re-ranker', d: 'An optional bounded lookahead (policy + value + world model) re-ranks the top candidates — shallow search over a learned prior.' },
-  { n: '06', c: 'b', t: 'Per-player MPC', d: 'Model-Predictive Control converts the chosen intent into a physically feasible trajectory and vetoes anything the body cannot actually execute.' },
+  { n: '06', c: 'b', t: 'Per-player MPC', d: 'Model-Predictive Control executes whatever the policy chose — a dribble, a pass, or a shot — projecting it forward against the body’s dynamics and a predicted opponent, and scoring how likely it is to actually come off. When that probability falls below a learned, context-dependent bar, it rejects the move and hands the decision back to the POMDP to try its next-best action.' },
 ];
 ---
 <Base>
