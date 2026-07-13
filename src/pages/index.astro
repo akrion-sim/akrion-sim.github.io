@@ -12,6 +12,27 @@ const explainers = [
     body: 'The real PPO machinery — advantage, GAE, the clipped objective, and how a single weight moves. With a live policy-update demo. Policy gradients, not tree search.',
     href: `${base}explainers/how-akrion-learns`,
   },
+  {
+    accent: 'r',
+    tag: 'interactive demo',
+    title: 'Watch the champion play itself',
+    body: 'A self-play ladder rendered in the browser: two learned policies in a champion-vs-champion match, plus the generation-by-generation climb in goal difference. Live playback, zero dependencies.',
+    href: `${base}explainers/self-play-champion`,
+  },
+  {
+    accent: 'b',
+    tag: '5-a-side · full walkthrough',
+    title: 'How a 5-a-side policy learns',
+    body: 'The end-to-end teaching page — POMDP belief, tabular DP, neural nets and MPC, every number pulled from a real run — with a 100-generation reward-optimization stepper across all 32 dimensions.',
+    href: `${base}explainers/five-a-side-learns`,
+  },
+  {
+    accent: 'b',
+    tag: '11-a-side · the real engine',
+    title: 'DP, neural nets, LP & QP in one loop',
+    body: 'The full 22-player engine: real dynamic programming (EPV grid + credit replay), the Clarabel formation LP, a point-mass MPC/QP, and a margin-gated league — with a plateau-escape stepper.',
+    href: `${base}explainers/eleven-a-side-engine`,
+  },
 ];
 
 const pillars = [
