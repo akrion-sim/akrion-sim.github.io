@@ -4,7 +4,7 @@ const base = import.meta.env.BASE_URL;
 
 const controls = [
   { c: 'b', t: 'Formation LP / IPM', d: 'A continuous linear program allocates the eleven players into an optimal team shape for the current phase — solved by Clarabel interior-point in optimized builds, with a deterministic simplex fallback for reproducibility.' },
-  { c: 'b', t: 'Per-player MPC', d: 'Model-Predictive Control executes exactly one actor path per player: it projects the intent forward, respects the body’s dynamics, and vetoes trajectories that are physically infeasible.' },
+  { c: 'b', t: 'Per-player MPC', d: 'Model-Predictive Control executes whatever the policy chose — dribble, pass or shot — projecting the intent forward against the body’s dynamics and a predicted opponent, and scoring its probability of success. When that probability is below a learned, context-dependent threshold it rejects the move and hands the decision back to the POMDP for its next-best action.' },
   { c: 'b', t: 'POMDP belief', d: 'No player observes the whole truth, so each maintains a belief over hidden variables — opponent press intent, anticipated pass trajectories — and decides in belief space.' },
   { c: 'g', t: 'Learned world model', d: 'A neural forward-dynamics model predicts the next state, giving the planner a receding-horizon view of where the ball and bodies are heading.' },
   { c: 'r', t: 'Anti-bunch & spacing discipline', d: 'Territorial-spacing nudges, defensive line push-up, and formation stagger keep 22 agents from collapsing onto the ball — each independently toggleable to A/B its effect.' },
@@ -106,7 +106,8 @@ per-player intent →  Policy head (actor)
                      GK · DEF · MID · FWD
 
 execution         →  MPC trajectory
-                     + feasibility veto
+                     scores P(success) per intent
+                     reject → POMDP next-best
 
 result            →  pass · shoot · dribble
                      move · tackle</code></pre>

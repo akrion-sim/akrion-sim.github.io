@@ -12,6 +12,27 @@ const explainers = [
     body: 'The real PPO machinery — advantage, GAE, the clipped objective, and how a single weight moves. With a live policy-update demo. Policy gradients, not tree search.',
     href: `${base}explainers/how-akrion-learns`,
   },
+  {
+    accent: 'r',
+    tag: 'interactive demo',
+    title: 'Watch the champion play itself',
+    body: 'A self-play ladder rendered in the browser: two learned policies in a champion-vs-champion match, plus the generation-by-generation climb in goal difference. Live playback, zero dependencies.',
+    href: `${base}explainers/self-play-champion`,
+  },
+  {
+    accent: 'b',
+    tag: '5-a-side · full walkthrough',
+    title: 'How a 5-a-side policy learns',
+    body: 'The end-to-end teaching page — POMDP belief, tabular DP, neural nets and MPC, every number pulled from a real run — with a 100-generation reward-optimization stepper across all 32 dimensions.',
+    href: `${base}explainers/five-a-side-learns`,
+  },
+  {
+    accent: 'b',
+    tag: '11-a-side · the real engine',
+    title: 'DP, neural nets, LP & QP in one loop',
+    body: 'The full 22-player engine: real dynamic programming (EPV grid + credit replay), the Clarabel formation LP, a point-mass MPC/QP, and a margin-gated league — with a plateau-escape stepper.',
+    href: `${base}explainers/eleven-a-side-engine`,
+  },
 ];
 
 const pillars = [
@@ -20,7 +41,7 @@ const pillars = [
     tag: 'Intelligent control',
     title: 'Optimal control, not scripted rules',
     body: 'Every tick, a formation LP/IPM allocates team shape, a policy head chooses each player’s intent, and per-player Model-Predictive Control turns that intent into a feasible trajectory. Control is computed — not hand-authored.',
-    points: ['Formation LP solved by Clarabel / IPM', 'POMDP belief over press & pass intent', 'Per-player MPC with feasibility veto'],
+    points: ['Formation LP solved by Clarabel / IPM', 'POMDP belief over press & pass intent', 'Per-player MPC: dribble / pass / shot feasibility, learned reject-and-replan'],
   },
   {
     accent: 'g',
@@ -44,7 +65,7 @@ const stack = [
   { n: '03', c: 'b', t: 'Formation LP / IPM', d: 'A continuous linear program (Clarabel / interior-point) allocates the eleven slots into an optimal team shape for the current phase of play.' },
   { n: '04', c: 'g', t: 'Policy head (actor)', d: 'A neural SoccerPolicyHead with per-role embeddings — GK, DEF, MID, FWD — scores actions: pass, shoot, dribble, move, tackle.' },
   { n: '05', c: 'b', t: 'PUCT re-ranker', d: 'An optional bounded lookahead (policy + value + world model) re-ranks the top candidates — shallow search over a learned prior.' },
-  { n: '06', c: 'b', t: 'Per-player MPC', d: 'Model-Predictive Control converts the chosen intent into a physically feasible trajectory and vetoes anything the body cannot actually execute.' },
+  { n: '06', c: 'b', t: 'Per-player MPC', d: 'Model-Predictive Control executes whatever the policy chose — a dribble, a pass, or a shot — projecting it forward against the body’s dynamics and a predicted opponent, and scoring how likely it is to actually come off. When that probability falls below a learned, context-dependent bar, it rejects the move and hands the decision back to the POMDP to try its next-best action.' },
 ];
 ---
 <Base>
