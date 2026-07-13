@@ -169,6 +169,38 @@ const concepts = [
 
   <hr class="hr" />
 
+  <!-- VOCABULARY / CONCEPTS -->
+  <section class="section" id="concepts">
+    <div class="wrap">
+      <div class="reveal" style="max-width:760px; margin-bottom:44px;">
+        <p class="eyebrow">Vocabulary</p>
+        <h2>Four words the climb hangs on</h2>
+        <p class="lede">
+          To read the research, four terms matter: what a test rig <em>is</em>
+          (<strong>hermetic</strong>), the two ways a value can be represented
+          (<strong>tabular</strong> vs. learned), the baseline the engine is measured
+          against (<strong>the analytic engine</strong>), and the plateau that baseline
+          quietly imposes (<strong>the analytic ceiling</strong>).
+        </p>
+      </div>
+      <div class="grid grid-2 concepts">
+        {concepts.map((x) => (
+          <article class={`card accent-${x.c} reveal`}>
+            <span class="topbar"></span>
+            <div class="chead">
+              <h3>{x.t}</h3>
+              <span class="ctag">{x.tag}</span>
+            </div>
+            <p class="clead"><strong>{x.lead}</strong> {x.body}</p>
+            <p class="cwhy"><span class="why-k">Why it matters</span> {x.why}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr" />
+
   <!-- OPTIMAL + ADAPT -->
   <section class="section">
     <div class="wrap">
