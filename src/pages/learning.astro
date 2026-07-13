@@ -18,6 +18,33 @@ const reward = [
   { k: 'tactical shaping', d: 'width · line depth · cohesion · team shape' },
   { k: 'pitch value (gated)', d: 'pitch-control × expected-threat (xT) delta' },
 ];
+
+const concepts = [
+  {
+    c: 'g', tag: 'test setup', t: 'Hermetic',
+    lead: 'Sealed shut.',
+    body: 'A hermetic run shares no code with the production engine — its own PRNG, its own neural net and backprop, its own PPO, zero external crates. Nothing from the full system can leak in.',
+    why: 'It is a positive control: if a from-scratch policy learns to play inside a sealed 5-a-side sandbox, learning genuinely works — the result can’t be an artifact of the production engine’s database, cluster, or plumbing.',
+  },
+  {
+    c: 'b', tag: 'exact', t: 'Tabular',
+    lead: 'A lookup table.',
+    body: 'Tabular methods store one value for every discrete state — perfect recall, but zero generalization. They know nothing about a position never visited, and a continuous pitch has infinitely many.',
+    why: 'That is exactly why a neural net is needed: it approximates the table with a smooth function that generalizes to unseen states. The dynamic-programming optimum is (near-)tabular; the network is what chases it at scale.',
+  },
+  {
+    c: 'b', tag: 'baseline', t: 'The analytic engine',
+    lead: 'A hand-written, closed-form controller.',
+    body: 'It decides by geometry and rules — who is open, the angle to goal, the expected value of a pass — computed directly, with no learning at all.',
+    why: 'It is a strong, sensible opponent and the sparring partner the learner is scored against. “Beat analytic” is the bar the whole climb is measured by.',
+  },
+  {
+    c: 'r', tag: 'the trap', t: 'The analytic ceiling',
+    lead: 'The parity plateau.',
+    body: 'It is the ceiling a learner hits when its architecture can only imitate or re-rank the analytic engine — it picks among analytic’s own options and its value head regresses onto analytic’s table, so its best possible outcome is a tie. The ceiling is built into the design, not a score being lost.',
+    why: 'Breaking through needs the learner to actually play analytic, judge positions by real outcomes, and take actions analytic never offered. Strip those crutches away — pure net, no tabular-Q blend, no analytic shield — and a hermetic 5-a-side climbed past analytic: +6.24 goal difference, ~99% win rate.',
+  },
+];
 ---
 <Base title="Learning & AI/ML — Akrion Soccer Engine" description="The reinforcement-learning system behind Akrion: self-play, PPO actor-critic, curriculum learning, evolutionary search, and continual adaptation to unseen opponents.">
   <section class="section head">
