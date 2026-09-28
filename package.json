@@ -14,7 +14,7 @@
     "prebuild": "npm run lint:ores"
   },
   "dependencies": {
-    "astro": "^7.3.3"
+    "astro": "^7.3.5"
   },
   "oresLint": {
     "note": "Declared, not installed. ores-lint resolves these from a global install - see .ores-lint/README.md",
