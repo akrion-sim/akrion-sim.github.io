@@ -16,4 +16,57 @@ permissions:
 
 jobs:
   real-web:
-    uses: opto-sync/opto-sync-e2e/.github/workflows/real-web-app-reusable.yml@0560cd15a9c81aa7905b348a71c645354c1dad1f
+    # Pinned Playwright 1.56.0 does not support ubuntu-26.04 (current latest).
+    # Keep the exact upstream test scenario, but run it on a supported image.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact proposed site
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          path: app
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Checkout pinned real-web test implementation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: opto-sync/opto-sync-e2e
+          ref: 0560cd15a9c81aa7905b348a71c645354c1dad1f
+          path: .opto-real-web
+          persist-credentials: false
+      - name: Install pinned Node 22
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22.16.0'
+      - name: Build site from lockfile
+        working-directory: app
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run check --if-present
+          npm test --if-present
+          npm run build
+          test -f dist/index.html
+      - name: Install pinned Chromium driver
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/opto-browser"
+          cd "$RUNNER_TEMP/opto-browser"
+          npm init -y >/dev/null
+          npm install --no-save --ignore-scripts playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Exercise pinned browser durability, reload and offline scenario
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/opto-browser/node_modules/playwright
+          SCENARIO: ${{ github.workspace }}/.opto-real-web/tests/real-web-app.e2e.cjs
+        run: |
+          set -euo pipefail
+          node --check "$SCENARIO"
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory app/dist >"$RUNNER_TEMP/opto-http.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
+            sleep 1
+          done
+          APP_MODE=http APP_URL=http://127.0.0.1:4173/index.html node "$SCENARIO"
