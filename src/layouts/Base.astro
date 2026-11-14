@@ -34,12 +34,33 @@ const site = Astro.site?.href ?? 'https://akrion-sim.github.io/';
     <meta name="twitter:description" content={description} />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <Nav />
-    <main>
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
     <Footer />
 
+    <style is:global>
+      .skip-link {
+        position: fixed;
+        top: 0.75rem;
+        left: 0.75rem;
+        z-index: 1000;
+        padding: 0.7rem 1rem;
+        background: #ffffff;
+        color: #070b14;
+        border: 2px solid #315da8;
+        border-radius: 0.4rem;
+        text-decoration: none;
+        font-weight: 700;
+        transform: translateY(-180%);
+      }
+      .skip-link:focus-visible {
+        transform: translateY(0);
+      }
+      #main-content:focus { outline: none; }
+    </style>
     <script is:inline>
       // Scroll reveal
       const io = new IntersectionObserver((entries) => {
